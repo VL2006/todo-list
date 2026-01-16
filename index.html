@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎯 My Todo List</title>
+  <title>🔑 Login & 🎯 Todo List</title>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
   <style>
     * {
@@ -15,18 +15,18 @@
 
     html, body {
       width: 100%;
+      height: 100%;
       overflow-x: hidden;
+      font-family: Arial, sans-serif;
     }
 
     body {
-      font-family: Arial, sans-serif;
       background: linear-gradient(270deg, #ffecd2, #fcb69f, #a1c4fd, #c2e9fb);
       background-size: 800% 800%;
       animation: gradientFlow 10s ease infinite;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
+      align-items: center;
       padding: 20px;
     }
 
@@ -36,7 +36,48 @@
       100% { background-position: 0% 50%; }
     }
 
-    .container {
+    /* Login container design */
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .login-container h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px;
+      color: #e67e22;
+      margin-bottom: 25px;
+    }
+
+    .login-container input, .login-container button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .login-container button {
+      background: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .login-container button:hover {
+      background: #219150;
+    }
+
+    /* Todo container design */
+    .todo-container {
+      display: none; /* Hide initially */
       background: white;
       padding: 25px;
       border-radius: 15px;
@@ -45,7 +86,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
 
-    h1 {
+    .todo-container h1 {
       font-family: 'Dancing Script', cursive;
       text-align: center;
       font-size: 32px;
@@ -145,7 +186,7 @@
         padding: 10px;
       }
 
-      .container {
+      .login-container, .todo-container {
         padding: 15px;
       }
 
@@ -174,9 +215,17 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎯 My Todo List</h1>
+  <!-- Login Page -->
+  <div class="login-container" id="loginPage">
+    <h1>🔑 Login</h1>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
 
+  <!-- Todo Page -->
+  <div class="todo-container" id="todoPage">
+    <h1>🎯 My Todo List</h1>
     <input type="text" id="taskInput" placeholder="Enter your task 📝">
     <select id="categoryInput">
       <option value="🛒 Shopping">🛒 Shopping</option>
@@ -200,7 +249,7 @@
     <button onclick="addTask()">➕ Add Task</button>
 
     <ul id="taskList"></ul>
-    <div id="celebration">🎉 All tasks completed! Great job! 🎉</div>
+    <div id="celebration"> All tasks completed! Great job!🎉</div>
   </div>
 
   <!-- Sound Effects -->
@@ -209,6 +258,26 @@
   <audio id="completeSound" src="https://assets.mixkit.co/sfx/download/mixkit-game-ball-tap-2073.wav"></audio>
 
   <script>
+    // Login function
+    function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        alert("⚠️ Please enter both username and password.");
+        return;
+      }
+
+      // Hide login, show todo page
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('todoPage').style.display = 'block';
+    }
+
+    document.getElementById('password').addEventListener('keypress', function(e) {
+      if (e.key === "Enter") login();
+    });
+
+    // Todo List Logic
     const taskList = document.getElementById("taskList");
     const addSound = document.getElementById("addSound");
     const deleteSound = document.getElementById("deleteSound");
@@ -232,14 +301,7 @@
 
       const dateTime = date && time ? `${date}T${time}` : "";
 
-      const taskData = {
-        task,
-        date: dateTime,
-        category,
-        priority,
-        completed: false
-      };
-
+      const taskData = { task, date: dateTime, category, priority, completed: false };
       createTaskElement(taskData);
       saveToLocal(taskData);
 
@@ -282,7 +344,6 @@
     function updateLocalStorage() {
       const items = document.querySelectorAll("#taskList li");
       const tasks = [];
-
       items.forEach(item => {
         const span = item.querySelector("span");
         const text = span.textContent;
@@ -292,23 +353,10 @@
         const priority = priorityPart?.replace(")", "").toLowerCase();
         const completed = span.classList.contains("completed");
         const dateText = item.querySelector(".meta").textContent.replace("📅 Reminder: ", "").trim();
-
         let date = "";
-        try {
-          date = dateText === "No date" ? "" : new Date(dateText).toISOString();
-        } catch (e) {
-          date = "";
-        }
-
-        tasks.push({
-          task,
-          date,
-          category,
-          priority,
-          completed
-        });
+        try { date = dateText === "No date" ? "" : new Date(dateText).toISOString(); } catch(e){ date=""; }
+        tasks.push({ task, date, category, priority, completed });
       });
-
       localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
